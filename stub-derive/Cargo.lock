@@ -21,24 +21,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "stub"
-version = "0.1.0"
-dependencies = [
- "stub-core",
- "stub-derive",
-]
-
-[[package]]
-name = "stub-core"
-version = "0.1.0"
-
-[[package]]
 name = "stub-derive"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "stub-core",
  "syn",
 ]
 
