@@ -11,8 +11,6 @@
 //! on some obscure types can have side effects on your binary size.
 //!
 
-// #![feature(maybe_uninit_uninit_array_transpose)]
-
 mod fns;
 mod irg;
 mod std;
@@ -24,21 +22,6 @@ pub trait Stub {
     fn stub() -> Self;
 }
 
-// struct A {
-//     f1: u8,
-//     f2: u8,
-//     f3: u8,
-// }
-//
-// impl Stub for A {
-//     fn stub() -> Self {
-//         Self { f1: 0, f2: 0, f3: 0 }
-//     }
-// }
-//
-// fn name() {
-//     let b = A {
-//         f1: 4,
-//         ..A::stub()
-//     };
-// }
+pub fn stub<T: Stub>() -> T {
+    T::stub()
+}

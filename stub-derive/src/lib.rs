@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use syn::DeriveInput;
 
-#[proc_macro_derive(Stub)]
+#[proc_macro_derive(Stub, attributes(stub))]
 pub fn derive_stub(item: TokenStream) -> TokenStream {
     let DeriveInput {
         ident,
@@ -11,33 +11,67 @@ pub fn derive_stub(item: TokenStream) -> TokenStream {
         data,
         ..
     } = syn::parse_macro_input!(item as syn::DeriveInput);
+    let name = ident;
+
+    let params = generics.params;
+    let where_clause = generics.where_clause;
 
     match data {
         syn::Data::Struct(data) => {
-            let fs: Vec<TokenStream2> = data
-                .fields
-                .into_iter()
-                .map(|f| {
-                    let i = f.ident.unwrap();
-                    quote::quote!(#i: Stub::stub(), )
-                })
-                .collect();
-
-            let params = generics.params;
-            let where_clause = generics.where_clause;
+            let fields = parse_feilds(data.fields);
 
             quote::quote!(
-                impl #params Stub for #ident #params #where_clause {
+                impl #params Stub for #name #params #where_clause {
                     fn stub() -> Self {
-                        Self {
-                            #( #fs )*
-                        }
+                        Self #fields
                     }
                 }
             )
         }
-        syn::Data::Enum(_) => todo!(),
+        syn::Data::Enum(data) => {
+            let v = data
+                .variants
+                .into_iter()
+                .find(|v| v.attrs.iter().find(|a| a.path().is_ident("stub")).is_some());
+
+            let syn::Variant { ident, fields, .. } =
+                v.expect("Tag one of the variants with #[stub]");
+
+            let t = parse_feilds(fields);
+
+            quote::quote!(
+                impl #params Stub for #name #params #where_clause {
+                    fn stub() -> Self {
+                        Self::#ident #t
+                    }
+                }
+            )
+        }
         syn::Data::Union(_) => todo!(),
     }
     .into()
+}
+
+fn parse_feilds(fields: syn::Fields) -> TokenStream2 {
+    let mut has_feilds = true;
+    let fs: Vec<TokenStream2> = fields
+        .into_iter()
+        .map(|f| {
+            if let Some(ident) = f.ident {
+                quote::quote!(#ident: Stub::stub(), )
+            } else {
+                has_feilds = false;
+                quote::quote!(Stub::stub(),)
+            }
+        })
+        .collect();
+    if has_feilds {
+        quote::quote!(
+            { #( #fs )* }
+        )
+    } else {
+        quote::quote!(
+            ( #( #fs )* )
+        )
+    }
 }

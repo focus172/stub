@@ -17,3 +17,9 @@ impl<T> Stub for Box<[T]> {
         std::boxed::Box::new([])
     }
 }
+
+impl<T> Stub for Vec<T> {
+    fn stub() -> Self {
+        Vec::new()
+    }
+}
