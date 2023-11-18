@@ -37,41 +37,39 @@ pub fn derive_stub(item: TokenStream) -> TokenStream {
             let syn::Variant { ident, fields, .. } =
                 v.expect("Tag one of the variants with #[stub]");
 
-            let t = parse_feilds(fields);
+            let f = parse_feilds(fields);
 
             quote::quote!(
                 impl #params Stub for #name #params #where_clause {
                     fn stub() -> Self {
-                        Self::#ident #t
+                        Self::#ident #f
                     }
                 }
             )
         }
-        syn::Data::Union(_) => todo!(),
+        syn::Data::Union(_) => panic!("This trait cannot be derived for unions"),
     }
     .into()
 }
 
-fn parse_feilds(fields: syn::Fields) -> TokenStream2 {
+fn parse_feilds<I: IntoIterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
     let mut has_feilds = true;
+
     let fs: Vec<TokenStream2> = fields
         .into_iter()
         .map(|f| {
             if let Some(ident) = f.ident {
-                quote::quote!(#ident: Stub::stub(), )
+                quote::quote!(#ident: Stub::stub())
             } else {
                 has_feilds = false;
-                quote::quote!(Stub::stub(),)
+                quote::quote!(Stub::stub())
             }
         })
         .collect();
+
     if has_feilds {
-        quote::quote!(
-            { #( #fs )* }
-        )
+        quote::quote! { { #( #fs, )* } }
     } else {
-        quote::quote!(
-            ( #( #fs )* )
-        )
+        quote::quote! { ( #( #fs, )* ) }
     }
 }

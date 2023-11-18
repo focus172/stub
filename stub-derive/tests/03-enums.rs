@@ -19,3 +19,16 @@ enum B {
     F3(bool, A),
     F4,
 }
+
+#[derive(Stub)]
+enum C {
+    F1,
+    F2,
+    #[stub]
+    F3 {
+        f1: bool,
+        f2: B,
+        f3: A,
+    },
+    F4,
+}
