@@ -21,7 +21,3 @@ mod wrp;
 pub trait Stub {
     fn stub() -> Self;
 }
-
-pub fn stub<T: Stub>() -> T {
-    T::stub()
-}

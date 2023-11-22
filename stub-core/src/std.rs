@@ -4,7 +4,6 @@ extern crate std;
 
 use crate::Stub;
 
-
 macro_rules! stub_impl {
     ($val:expr => $($t:ty)*) => {$(
         impl Stub for $t {

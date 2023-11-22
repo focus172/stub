@@ -23,3 +23,9 @@ impl<T> Stub for Vec<T> {
         Vec::new()
     }
 }
+
+impl<T> Stub for std::collections::HashSet<T> {
+    fn stub() -> Self {
+        std::collections::HashSet::new()
+    }
+}

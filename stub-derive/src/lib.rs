@@ -11,6 +11,7 @@ pub fn derive_stub(item: TokenStream) -> TokenStream {
         data,
         ..
     } = syn::parse_macro_input!(item as syn::DeriveInput);
+
     let name = ident;
 
     let params = generics.params;
@@ -29,25 +30,27 @@ pub fn derive_stub(item: TokenStream) -> TokenStream {
             )
         }
         syn::Data::Enum(data) => {
-            let v = data
+            let syn::Variant { ident, fields, .. } = data
                 .variants
                 .into_iter()
-                .find(|v| v.attrs.iter().find(|a| a.path().is_ident("stub")).is_some());
+                .find(|v| v.attrs.iter().any(|a| a.path().is_ident("stub")))
+                .expect("Tag one of the variants with #[stub]");
 
-            let syn::Variant { ident, fields, .. } =
-                v.expect("Tag one of the variants with #[stub]");
-
-            let f = parse_feilds(fields);
+            let fields = parse_feilds(fields);
 
             quote::quote!(
                 impl #params Stub for #name #params #where_clause {
                     fn stub() -> Self {
-                        Self::#ident #f
+                        Self::#ident #fields
                     }
                 }
             )
         }
-        syn::Data::Union(_) => panic!("This trait cannot be derived for unions"),
+        syn::Data::Union(data) => {
+            // compile_error!("oops");
+            syn::Error::new_spanned(data.union_token, "Stub trait cannot be derived for unions")
+                .into_compile_error()
+        }
     }
     .into()
 }
