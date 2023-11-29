@@ -6,3 +6,7 @@ edition = "2021"
 [dependencies]
 stub-core = { path = "../stub-core/" }
 stub-derive = { path = "../stub-derive/" }
+
+[features]
+# default = ["derive"]
+# derive = ["dep:stub-derive"]

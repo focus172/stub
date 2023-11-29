@@ -3,8 +3,18 @@ use crate::Stub;
 /// Also Implemented for funtions of up to 12 argumetns that return nothing
 /// or a [`Stub`].
 impl Stub for fn() {
+    #[inline]
     fn stub() -> Self {
         || {}
+    }
+}
+
+/// Also Implemented for funtions of up to 12 argumetns that return nothing
+/// or a [`Stub`].
+impl<R: Stub> Stub for fn() -> R {
+    #[inline]
+    fn stub() -> Self {
+        R::stub
     }
 }
 
